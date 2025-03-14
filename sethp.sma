@@ -3,16 +3,43 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <fun>
-#include <cstrike>
+#include <hamsandwich>
 #define PLUGIN "sethp"
 #define VERSION "1.0"
 #define AUTHOR "frax"
 
+new amx_start_hp_ct;
+new amx_start_hp_t;
+new amx_start_hp;
 
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	register_concmd("amx_hp", "cmd_hp", ADMIN_SLAY, "<target> <hplamount>")
+	RegisterHamPlayer(Ham_Spawn, "player_spawn", 1)
+	
+	amx_start_hp = create_cvar("amx_start_hp", "0", FCVAR_NONE, "Enable setting a start hp", true, 0.0, true, 1.0)
+	amx_start_hp_ct = create_cvar("amx_start_hp_ct", "100", FCVAR_NONE,"Amount of hp set at the start", true, 1.0, false)
+	amx_start_hp_t = create_cvar("amx_start_hp_t", "100", FCVAR_NONE,"Amount of hp set at the start", true, 1.0, false)
 }
+
+public player_spawn(id){
+	
+	if(get_pcvar_num(amx_start_hp) == 0)
+		return PLUGIN_HANDLED
+	
+	if(get_user_team(id) == 1){
+		set_user_health(id, get_pcvar_num(amx_start_hp_t))
+		return PLUGIN_HANDLED
+		}
+		
+	if(get_user_team(id) == 2){
+		set_user_health(id, get_pcvar_num(amx_start_hp_ct))
+		return PLUGIN_HANDLED
+		}
+		
+	return PLUGIN_HANDLED	
+}
+
 
 public cmd_hp(id, level, cid){
 	if(!cmd_access(id, level, cid, 3))
@@ -69,6 +96,3 @@ public cmd_hp(id, level, cid){
 	return PLUGIN_HANDLED
 }
 
-/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
-*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1029\\ f0\\ fs16 \n\\ par }
-*/
