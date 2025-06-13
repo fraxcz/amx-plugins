@@ -4,94 +4,78 @@
 #include <amxmisc>
 #include <fun>
 #include <hamsandwich>
+#include <cstrike>
 #define PLUGIN "sethp"
 #define VERSION "1.0"
 #define AUTHOR "frax"
 
-new amx_start_hp_ct;
-new amx_start_hp_t;
-new amx_start_hp;
+new t_hp;
+new ct_hp;
 
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
-	register_concmd("amx_hp", "cmd_hp", ADMIN_SLAY, "<target> <hplamount>")
-	RegisterHamPlayer(Ham_Spawn, "player_spawn", 1)
-	
-	amx_start_hp = create_cvar("amx_start_hp", "0", FCVAR_NONE, "Enable setting a start hp", true, 0.0, true, 1.0)
-	amx_start_hp_ct = create_cvar("amx_start_hp_ct", "100", FCVAR_NONE,"Amount of hp set at the start", true, 1.0, false)
-	amx_start_hp_t = create_cvar("amx_start_hp_t", "100", FCVAR_NONE,"Amount of hp set at the start", true, 1.0, false)
+	t_hp = create_cvar("amx_hp_t", "100.0", FCVAR_NONE, "Sets starting amount of HP for Ts.", true, 1.0, false)
+	ct_hp = create_cvar("amx_hp_ct", "100.0", FCVAR_NONE, "Sets starting amount of HP for CTs.", true, 1.0, false)
+	register_concmd("amx_hp", "cmd_hp", ADMIN_SLAY, "amx_hp <target> <hplamount>")
+	RegisterHamPlayer(Ham_Spawn, "start_hp", 1)
 }
-
-public player_spawn(id){
-	
-	if(get_pcvar_num(amx_start_hp) == 0)
-		return PLUGIN_HANDLED
-	
-	if(get_user_team(id) == 1){
-		set_user_health(id, get_pcvar_num(amx_start_hp_t))
-		return PLUGIN_HANDLED
-		}
-		
-	if(get_user_team(id) == 2){
-		set_user_health(id, get_pcvar_num(amx_start_hp_ct))
-		return PLUGIN_HANDLED
-		}
-		
-	return PLUGIN_HANDLED	
-}
-
 
 public cmd_hp(id, level, cid){
 	if(!cmd_access(id, level, cid, 3))
 		return PLUGIN_HANDLED
 		
-	new Arg1[24]
+	new targetArg[24]
 	new hpamount[10]
+	new players[32]
+	new numOfPlayers = 0
+	read_argv(1, targetArg, 24)
+	read_argv(2, hpamount, 10)
 	
-	read_argv(1, Arg1, 24)
-	read_argv(2, hpamount, 5)
-	new health = str_to_num(hpamount)
-	
-	if(Arg1[0] != '@'){
-		new playertarget = cmd_target(id, Arg1, 0)
-	
-		if(!playertarget){
-			console_print(id, "%s could not be targeted", Arg1)
+	if(equali(targetArg, "@", 1))
+	{
+		if(equali(targetArg, "@T")){
+			get_players_ex(players, numOfPlayers, GetPlayers_ExcludeDead | GetPlayers_MatchTeam, "TERRORIST")
+		}
+		else if(equali(targetArg, "@CT")){
+			get_players_ex(players, numOfPlayers, GetPlayers_ExcludeDead | GetPlayers_MatchTeam, "CT")
+		}
+		else{
 			return PLUGIN_HANDLED
 		}
-		
-		set_user_health(playertarget, health)
+		for(new i = 0; i < numOfPlayers; i++){
+			set_user_health(players[i], str_to_num(hpamount))
+		}
 		return PLUGIN_HANDLED
 	}
+
+	new playertarget = cmd_target(id, targetArg, 0)
 	
-	new players[32]
-	new numberOfPlayers
-	get_players_ex(players, numberOfPlayers,GetPlayers_ExcludeDead)
+	if(!playertarget){
+		console_print(id, "%s could not be targeted", targetArg)
+		return PLUGIN_HANDLED
+	}
+		
+	new health = str_to_num(hpamount)
 	
-	if(strcmp(Arg1, "@CT", true) == 0){
-		
-		for(new i = 0; i < numberOfPlayers; i++){
-			if(get_user_team(players[i]) == 2){
-				set_user_health(players[i], health)
-			}
-		}
+	set_user_health(playertarget, health)
+	return PLUGIN_HANDLED
+}
+
+public start_hp(id){
+	if(!is_user_alive(id))
 		return PLUGIN_HANDLED
-	}
-	if(strcmp(Arg1, "@T", true) == 0){
-		
-		for(new i = 0; i < numberOfPlayers; i++){
-			if(get_user_team(players[i]) == 1){
-				set_user_health(players[i], health)
-			}
+
+	switch(cs_get_user_team(id)){
+		case 1:
+		{
+			set_user_health(id, get_pcvar_num(t_hp))
+			return PLUGIN_HANDLED
 		}
-		return PLUGIN_HANDLED
-	}
-	if(strcmp(Arg1, "@ALL", true) == 0){
-		
-		for(new i = 0; i < numberOfPlayers; i++){
-			set_user_health(players[i], health)
+		case 2:
+		{
+			set_user_health(id, get_pcvar_num(ct_hp))
+			return PLUGIN_HANDLED
 		}
-		return PLUGIN_HANDLED
 	}
 	return PLUGIN_HANDLED
 }

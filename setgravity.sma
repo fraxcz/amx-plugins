@@ -2,98 +2,79 @@
 
 #include <amxmodx>
 #include <amxmisc>
-#include <hamsandwich>
 #include <fun>
-
-#define PLUGIN "setgravity"
+#include <hamsandwich>
+#include <cstrike>
+#define PLUGIN "set gravity"
 #define VERSION "1.0"
 #define AUTHOR "frax"
 
-
-new amx_start_gravity
-new amx_start_gravity_ct
-new amx_start_gravity_t
+new t_gravity;
+new ct_gravity;
 
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
-	
-	amx_start_gravity = create_cvar("amx_startgravity", "0", FCVAR_NONE, "Enable setting a start hp", true, 0.0, true, 1.0)
-	amx_start_gravity_ct = create_cvar("amx_start_gravity_ct", "1.0", FCVAR_NONE,"Set starting gravity for ct", true, 0.0, true, 99999.0)
-	amx_start_gravity_t = create_cvar("amx_start_gravity_t", ".1.0", FCVAR_NONE,"Set starting gravity for t", true, 0.0, true, 99999.0)
-	RegisterHamPlayer(Ham_Spawn, "player_spawn", 1)
-	register_concmd("amx_gravity", "cmd_gravity", ADMIN_SLAY, "<target> <gravitymultiplier>")
-}
-
-public player_spawn(id){
-	
-	if(get_pcvar_num(amx_start_gravity) == 0)
-		return PLUGIN_HANDLED
-		
-	if(get_user_team(id) == 1){
-		set_user_gravity(id, get_pcvar_float(amx_start_gravity_t))
-		return PLUGIN_HANDLED
-		}
-		
-	if(get_user_team(id) == 2){
-		set_user_gravity(id, get_pcvar_float(amx_start_gravity_ct))
-		return PLUGIN_HANDLED
-		}
-		
-	return PLUGIN_HANDLED	
+	t_gravity = create_cvar("amx_g_t", "1.0", FCVAR_NONE, "Sets starting gravity for Ts.", true, 0.0, false)
+	ct_gravity = create_cvar("amx_g_ct", "1.0", FCVAR_NONE, "Sets starting gravity for CTs.", true, 0.0, false)
+	register_concmd("amx_gravity", "cmd_gravity", ADMIN_SLAY, "amx_gravity <target> <hplamount>")
+	RegisterHamPlayer(Ham_Spawn, "start_gravity", 1)
 }
 
 public cmd_gravity(id, level, cid){
 	if(!cmd_access(id, level, cid, 3))
 		return PLUGIN_HANDLED
 		
-	new Arg1[24]
-	new gravityArg[5]
+	new targetArg[24]
+	new gravityAmount[10]
+	new players[32]
+	new numOfPlayers = 0
+	read_argv(1, targetArg, 24)
+	read_argv(2, gravityAmount, 10)
 	
-	read_argv(1, Arg1, 24)
-	read_argv(2, gravityArg, 5)
-	
-	new Float:gravity = str_to_float(gravityArg)
-	
-	if(Arg1[0] != '@'){
-		new playertarget = cmd_target(id, Arg1, 0)
-	
-		if(!playertarget){
-			console_print(id, "%s could not be targeted", Arg1)
+	if(equali(targetArg, "@", 1))
+	{
+		if(equali(targetArg, "@T")){
+			get_players_ex(players, numOfPlayers, GetPlayers_ExcludeDead | GetPlayers_MatchTeam, "TERRORIST")
+		}
+		else if(equali(targetArg, "@CT")){
+			get_players_ex(players, numOfPlayers, GetPlayers_ExcludeDead | GetPlayers_MatchTeam, "CT")
+		}
+		else{
 			return PLUGIN_HANDLED
 		}
-		
-		set_user_gravity(playertarget, gravity)
+		for(new i = 0; i < numOfPlayers; i++){
+			set_user_gravity(players[i], str_to_float(gravityAmount))
+		}
 		return PLUGIN_HANDLED
 	}
+
+	new playertarget = cmd_target(id, targetArg, 0)
 	
-	new players[32]
-	new numberOfPlayers
-	get_players_ex(players, numberOfPlayers,GetPlayers_ExcludeDead)
-	
-	if(strcmp(Arg1, "@CT", true) == 0){
-		
-		for(new i = 0; i < numberOfPlayers; i++){
-			if(get_user_team(players[i]) == 2){
-				set_user_gravity(players[i], gravity)
-			}
-		}
+	if(!playertarget){
+		console_print(id, "%s could not be targeted", targetArg)
 		return PLUGIN_HANDLED
 	}
-	if(strcmp(Arg1, "@T", true) == 0){
 		
-		for(new i = 0; i < numberOfPlayers; i++){
-			if(get_user_team(players[i]) == 1){
-				set_user_gravity(players[i], gravity)
-			}
-		}
+	set_user_gravity(playertarget, str_to_float(gravityAmount))
+	return PLUGIN_HANDLED
+}
+
+public start_gravity(id){
+	if(!is_user_alive(id))
 		return PLUGIN_HANDLED
-	}
-	if(strcmp(Arg1, "@ALL", true) == 0){
-		
-		for(new i = 0; i < numberOfPlayers; i++){
-			set_user_gravity(players[i], gravity)
+
+	switch(cs_get_user_team(id)){
+		case 1:
+		{
+			set_user_gravity(id, get_pcvar_float(t_gravity))
+			return PLUGIN_HANDLED
 		}
-		return PLUGIN_HANDLED
+		case 2:
+		{
+			set_user_gravity(id, get_pcvar_float(ct_gravity))
+			return PLUGIN_HANDLED
+		}
 	}
 	return PLUGIN_HANDLED
 }
+
