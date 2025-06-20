@@ -1,20 +1,55 @@
 #include <amxmodx>
+#include <cstrike>
 #include <fun>
-#define PLUGIN "super Jump"
+#include <hamsandwich>
+#define PLUGIN "weapon menu"
 #define VERSION "1.0"
 #define AUTHOR "frax"
 
+new players[33]
 public plugin_init(){
     register_plugin(PLUGIN, VERSION, AUTHOR)
-    register_clcmd("amx_weapons", "PrimaryMenu")
+    register_clcmd("amx_weapons", "primaryMenu")
+    RegisterHamPlayer(Ham_Spawn, "spawned_player", 1)
 }
 
-public PrimaryMenu(id){
+public spawned_player(id){
+
+    callfunc_begin("player_droprapidak", "rapidak.amxx")
+    callfunc_push_int(id)
+    callfunc_end()
+
+    players[id] = 0
+
+    if(is_user_alive(id)){
+        strip_user_weapons(id)
+        give_item(id, "weapon_knife")
+    }
+    else
+        return PLUGIN_HANDLED
+    
+    if(cs_get_user_team(id) == CS_TEAM_CT){
+        players[id] = 1
+    }
+
+    primaryMenu(id)
+    
+    return PLUGIN_HANDLED
+}
+
+public primaryMenu(id){
+
+    if(players[id] == 0)
+        return PLUGIN_HANDLED
+
     new menu = menu_create("Primary weapon menu", "menu_handler")
     menu_additem(menu, "\w AK-47", "P", 0)
     menu_additem(menu, "\w m4a1-s", "P", 0)
+    menu_additem(menu, "\w super ak-47", "P")
     menu_setprop(menu, MPROP_EXIT, MEXIT_ALL) //this is redundant, but we can actually set this to not be able to exit the menu
     menu_display(id, menu, 0)
+    players[id] = 0
+    return PLUGIN_HANDLED
 }
 
 public SecondaryMenu(id)
@@ -46,6 +81,13 @@ public menu_handler(id, menu, item){
                 case 1:
                 {
                     give_item(id, "weapon_m4a1")
+                }
+                case 2:
+                {
+                    callfunc_begin("player_getrapidak", "rapidak.amxx")
+                    callfunc_push_int(id)
+                    callfunc_end()
+                    give_item(id, "weapon_ak47")
                 }
             }
             SecondaryMenu(id)

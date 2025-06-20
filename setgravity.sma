@@ -16,7 +16,7 @@ public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	t_gravity = create_cvar("amx_g_t", "1.0", FCVAR_NONE, "Sets starting gravity for Ts.", true, 0.0, false)
 	ct_gravity = create_cvar("amx_g_ct", "1.0", FCVAR_NONE, "Sets starting gravity for CTs.", true, 0.0, false)
-	register_concmd("amx_gravity", "cmd_gravity", ADMIN_SLAY, "amx_gravity <target> <hplamount>")
+	register_concmd("amx_gravity", "cmd_gravity", ADMIN_SLAY, "amx_gravity <target> <gravity_multiplyer>")
 	RegisterHamPlayer(Ham_Spawn, "start_gravity", 1)
 }
 
@@ -64,12 +64,12 @@ public start_gravity(id){
 		return PLUGIN_HANDLED
 
 	switch(cs_get_user_team(id)){
-		case 1:
+		case CS_TEAM_T:
 		{
 			set_user_gravity(id, get_pcvar_float(t_gravity))
 			return PLUGIN_HANDLED
 		}
-		case 2:
+		case CS_TEAM_CT:
 		{
 			set_user_gravity(id, get_pcvar_float(ct_gravity))
 			return PLUGIN_HANDLED

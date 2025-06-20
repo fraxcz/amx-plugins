@@ -1,6 +1,5 @@
 #include <amxmodx>
-#include <amxmisc>
-#include <fakemeta>
+#include <cstrike>
 #include <engine>
 #include <hamsandwich>
 
@@ -30,17 +29,20 @@ public client_putinserver(id){
 
 
 public superjump(id){
-    if(players[id] > get_gametime()){
+    if(players[id] > get_gametime() || cs_get_user_team(id) == CS_TEAM_CT){
         return PLUGIN_HANDLED
     }
 
-    new Float:angles[3]; //pitch, yaw, roll
     new Float:vector[3];
-    pev(id, pev_v_angle, angles);
-    vector[0] = floatcos(angles[1], degrees) * floatcos(angles[0], degrees) * get_pcvar_float(forwardForce)
-    vector[1] = floatsin(angles[1], degrees) * floatcos(angles[0], degrees) * get_pcvar_float(forwardForce)
+    new Float:f_forwardForce = get_pcvar_float(forwardForce)
+
+    velocity_by_aim(id, 1, vector)
+    vector[0] *= f_forwardForce
+    vector[1] *= f_forwardForce
     vector[2] = get_pcvar_float(upForce)
-    set_pev(id, pev_velocity, vector)
+
+    set_user_velocity(id, vector)
+
     players[id] = get_gametime() + get_pcvar_float(cooldown);
     return PLUGIN_HANDLED
 }
