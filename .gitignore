@@ -419,8 +419,10 @@ FodyWeavers.xsd
 
 # amx files
 *.amxx
-compiled/
-logs/
-plugins/
 configs/
+data/
+dlls/
+logs/
 modules/
+plugins/
+compiled/
