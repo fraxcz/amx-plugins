@@ -13,8 +13,8 @@ new cooldown;
 new Float:players[32];
 public plugin_init(){
     register_plugin(PLUGIN, VERSION, AUTHOR)
-    forwardForce = create_cvar("amx_superjump_forward_force", "1.0", FCVAR_NONE, "Sets forward force boost.", false, 0.0, false)
-    upForce = create_cvar("amx_superjump_up_force", "1.0", FCVAR_NONE, "Sets up force boost.", false, 0.0, false)
+    forwardForce = create_cvar("amx_superjump_forward_force", "500.0", FCVAR_NONE, "Sets forward force boost.", false, 0.0, false)
+    upForce = create_cvar("amx_superjump_up_force", "270.0", FCVAR_NONE, "Sets up force boost.", false, 0.0, false)
     cooldown = create_cvar("amx_superjump_cooldown", "1.0", FCVAR_NONE, "A cooldown for superjump", true, 0.0, false)
     register_impulse(100, "superjump");
 }

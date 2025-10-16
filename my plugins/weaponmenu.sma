@@ -15,10 +15,6 @@ public plugin_init(){
 
 public spawned_player(id){
 
-    callfunc_begin("player_droprapidak", "rapidak.amxx")
-    callfunc_push_int(id)
-    callfunc_end()
-
     players[id] = 0
 
     if(is_user_alive(id)){
@@ -84,10 +80,9 @@ public menu_handler(id, menu, item){
                 }
                 case 2:
                 {
-                    callfunc_begin("player_getrapidak", "rapidak.amxx")
+                    callfunc_begin("give_player_rapidak", "rapidak.amxx")
                     callfunc_push_int(id)
                     callfunc_end()
-                    give_item(id, "weapon_ak47")
                 }
             }
             SecondaryMenu(id)

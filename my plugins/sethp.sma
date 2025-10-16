@@ -16,7 +16,7 @@ public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	t_hp = create_cvar("amx_hp_t", "100.0", FCVAR_NONE, "Sets starting amount of HP for Ts.", true, 1.0, false)
 	ct_hp = create_cvar("amx_hp_ct", "100.0", FCVAR_NONE, "Sets starting amount of HP for CTs.", true, 1.0, false)
-	register_concmd("amx_hp", "cmd_hp", ADMIN_SLAY, "amx_hp <target> <hplamount>")
+	register_concmd("amx_hp", "cmd_hp", ADMIN_SLAY, "amx_hp <target> <hpamount>")
 	RegisterHamPlayer(Ham_Spawn, "start_hp", 1)
 }
 
