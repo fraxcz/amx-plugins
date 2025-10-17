@@ -2,6 +2,7 @@
 #include <cstrike>
 #include <engine>
 #include <hamsandwich>
+#include <fakemeta>
 
 #define PLUGIN "super Jump"
 #define VERSION "1.0"
@@ -16,7 +17,7 @@ public plugin_init(){
     forwardForce = create_cvar("amx_superjump_forward_force", "500.0", FCVAR_NONE, "Sets forward force boost.", false, 0.0, false)
     upForce = create_cvar("amx_superjump_up_force", "270.0", FCVAR_NONE, "Sets up force boost.", false, 0.0, false)
     cooldown = create_cvar("amx_superjump_cooldown", "1.0", FCVAR_NONE, "A cooldown for superjump", true, 0.0, false)
-    register_impulse(100, "superjump");
+    RegisterHam(Ham_Player_Jump, "player", "superjump", 1)
 }
 
 public client_disconnected(id){
@@ -29,8 +30,9 @@ public client_putinserver(id){
 
 
 public superjump(id){
-    if(players[id] > get_gametime() || cs_get_user_team(id) == CS_TEAM_CT){
-        return PLUGIN_HANDLED
+    new player_flags = pev(id, pev_flags)
+    if(players[id] > get_gametime() || cs_get_user_team(id) == CS_TEAM_CT || (player_flags & FL_ONGROUND) == 0 || (player_flags & FL_DUCKING) == 0){
+        return PLUGIN_CONTINUE
     }
 
     new Float:vector[3];
