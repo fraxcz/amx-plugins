@@ -11,13 +11,22 @@
 new forwardForce;
 new upForce;
 new cooldown;
-new Float:players[32];
+new Float:players[33]
+new bool:g_bSoundEmitted[33]
+new JUMP_SOUND[] = "thebestserver/superjump_charged.wav"
+
 public plugin_init(){
     register_plugin(PLUGIN, VERSION, AUTHOR)
     forwardForce = create_cvar("amx_superjump_forward_force", "500.0", FCVAR_NONE, "Sets forward force boost.", false, 0.0, false)
     upForce = create_cvar("amx_superjump_up_force", "270.0", FCVAR_NONE, "Sets up force boost.", false, 0.0, false)
     cooldown = create_cvar("amx_superjump_cooldown", "1.0", FCVAR_NONE, "A cooldown for superjump", true, 0.0, false)
     RegisterHam(Ham_Player_Jump, "player", "superjump", 1)
+    RegisterHam(Ham_Player_PreThink, "player", "fw_PlayerPreThink")
+}
+
+public plugin_precache()
+{
+    precache_sound(JUMP_SOUND)
 }
 
 public client_disconnected(id){
@@ -26,8 +35,18 @@ public client_disconnected(id){
 
 public client_putinserver(id){
     players[id] = get_gametime();
+    g_bSoundEmitted[id] = true
 }
 
+public fw_PlayerPreThink(id)
+{
+    if(players[id] > get_gametime() || cs_get_user_team(id) == CS_TEAM_CT || g_bSoundEmitted[id])
+        return PLUGIN_CONTINUE
+
+    client_cmd(id, "spk sound/thebestserver/superjump_charged.wav")
+    g_bSoundEmitted[id] = true
+    return PLUGIN_CONTINUE
+}
 
 public superjump(id){
     new player_flags = pev(id, pev_flags)
@@ -44,7 +63,7 @@ public superjump(id){
     vector[2] = get_pcvar_float(upForce)
 
     set_user_velocity(id, vector)
-
     players[id] = get_gametime() + get_pcvar_float(cooldown);
+    g_bSoundEmitted[id] = false
     return PLUGIN_HANDLED
 }
