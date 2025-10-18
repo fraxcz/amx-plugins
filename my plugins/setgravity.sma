@@ -9,18 +9,19 @@
 #define VERSION "1.0"
 #define AUTHOR "frax"
 
-new t_gravity;
-new ct_gravity;
+new g_pcGravityT
+new g_pcGravityCT
 
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
-	t_gravity = create_cvar("amx_g_t", "1.0", FCVAR_NONE, "Sets starting gravity for Ts.", true, 0.0, false)
-	ct_gravity = create_cvar("amx_g_ct", "1.0", FCVAR_NONE, "Sets starting gravity for CTs.", true, 0.0, false)
+	g_pcGravityT = create_cvar("amx_g_t", "1.0", FCVAR_NONE, "Sets starting gravity for Ts.", true, 0.0, false)
+	g_pcGravityCT = create_cvar("amx_g_ct", "1.0", FCVAR_NONE, "Sets starting gravity for CTs.", true, 0.0, false)
 	register_concmd("amx_gravity", "cmd_gravity", ADMIN_SLAY, "amx_gravity <target> <gravity_multiplyer>")
-	RegisterHamPlayer(Ham_Spawn, "start_gravity", 1)
+	RegisterHamPlayer(Ham_Spawn, "starg_pcGravityT", 1)
 }
 
-public cmd_gravity(id, level, cid){
+public cmd_gravity(id, level, cid)
+{
 	if(!cmd_access(id, level, cid, 3))
 		return PLUGIN_HANDLED
 		
@@ -28,29 +29,39 @@ public cmd_gravity(id, level, cid){
 	new gravityAmount[10]
 	new players[32]
 	new numOfPlayers = 0
+
 	read_argv(1, targetArg, 24)
 	read_argv(2, gravityAmount, 10)
 	
 	if(equali(targetArg, "@", 1))
 	{
-		if(equali(targetArg, "@T")){
+		if(equali(targetArg, "@T"))
+		{
 			get_players_ex(players, numOfPlayers, GetPlayers_ExcludeDead | GetPlayers_MatchTeam, "TERRORIST")
 		}
-		else if(equali(targetArg, "@CT")){
+
+		else if(equali(targetArg, "@CT"))
+		{
 			get_players_ex(players, numOfPlayers, GetPlayers_ExcludeDead | GetPlayers_MatchTeam, "CT")
 		}
-		else{
+
+		else
+		{
 			return PLUGIN_HANDLED
 		}
-		for(new i = 0; i < numOfPlayers; i++){
+
+		for(new i = 0; i < numOfPlayers; i++)
+		{
 			set_user_gravity(players[i], str_to_float(gravityAmount))
 		}
+
 		return PLUGIN_HANDLED
 	}
 
 	new playertarget = cmd_target(id, targetArg, 0)
 	
-	if(!playertarget){
+	if(!playertarget)
+	{
 		console_print(id, "%s could not be targeted", targetArg)
 		return PLUGIN_HANDLED
 	}
@@ -59,22 +70,26 @@ public cmd_gravity(id, level, cid){
 	return PLUGIN_HANDLED
 }
 
-public start_gravity(id){
+public starg_pcGravityT(id)
+{
 	if(!is_user_alive(id))
 		return PLUGIN_HANDLED
 
-	switch(cs_get_user_team(id)){
+	switch(cs_get_user_team(id))
+	{
 		case CS_TEAM_T:
 		{
-			set_user_gravity(id, get_pcvar_float(t_gravity))
+			set_user_gravity(id, get_pcvar_float(g_pcGravityT))
 			return PLUGIN_HANDLED
 		}
+
 		case CS_TEAM_CT:
 		{
-			set_user_gravity(id, get_pcvar_float(ct_gravity))
+			set_user_gravity(id, get_pcvar_float(g_pcGravityCT))
 			return PLUGIN_HANDLED
 		}
 	}
+
 	return PLUGIN_HANDLED
 }
 

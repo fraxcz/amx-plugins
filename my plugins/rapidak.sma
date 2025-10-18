@@ -11,12 +11,12 @@
 
 new Array:g_iWeaponIds
 new VIEW_MODEL[] = "models/v_rapidak.mdl"
-new g_pcvar_knockback;
+new g_pcvar_knockback
 
 public plugin_init()
 {
     register_plugin(PLUGIN, VERSION, AUTHOR)
-    g_pcvar_knockback = create_cvar("amx_knockbackforce", "10.0", FCVAR_NONE, "knockback force", true, 0.0, false)
+    g_pcvar_knockback = create_cvar("amx_rapidak_knockbackforce", "10.0", FCVAR_NONE, "knockback force", true, 0.0, false)
     RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_ak47", "PrimaryAttackPre", 0)
     RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_ak47", "PrimaryAttackPost", 1)
     RegisterHam(Ham_TakeDamage, "player", "fw_takeDamage", 1)
@@ -33,10 +33,13 @@ public plugin_precache()
 }
 
 
-public give_player_rapidak(id){
-        engclient_cmd(id, "drop", "weapon_ak47")
-        new weaponid =  give_item(id, "weapon_ak47")
-        ArrayPushCell(g_iWeaponIds, weaponid)
+public give_player_rapidak(id)
+{
+    engclient_cmd(id, "drop", "weapon_ak47")
+
+    new weaponid =  give_item(id, "weapon_ak47")
+
+    ArrayPushCell(g_iWeaponIds, weaponid)
 }
 
 public remove_rapidak(weaponid)
@@ -79,7 +82,9 @@ public clean_ak47_ids()
     }
 
     ArrayDestroy(g_iWeaponIds)
+
     g_iWeaponIds = newWeaponIds
+
     return PLUGIN_CONTINUE
 }
 
@@ -88,21 +93,22 @@ public fw_takeDamage(victim, inflictor, attacker, Float:damage, damage_bits)
     new Float:knockback = get_pcvar_float(g_pcvar_knockback)
 
     if (!is_user_alive(attacker) || attacker == victim || ArrayFindValue(g_iWeaponIds, cs_get_user_weapon_entity(attacker)) == -1)
-    {
         return HAM_IGNORED
-    }
 
     
     new Float:attacker_velocity[3]
+
     velocity_by_aim(attacker, 1, attacker_velocity)
 
     new Float:victim_velocity[3]
+
     get_user_velocity(victim, victim_velocity)
 
     victim_velocity[0] += attacker_velocity[0] * knockback
     victim_velocity[1] += attacker_velocity[1] * knockback
 
     set_user_velocity(victim, victim_velocity)
+
     return HAM_IGNORED
 }
 
@@ -114,6 +120,7 @@ public WeaponDeploy(weaponid)
     new id = get_pdata_cbase(weaponid, 41, 4)
 
     set_pev(id, pev_viewmodel2, VIEW_MODEL)
+
     return HAM_IGNORED
 }
 
@@ -127,6 +134,7 @@ public PrimaryAttackPre(weaponid)
 
     //shotsfired
     set_pdata_int(weaponid, 64, 0, 4)
+
     return HAM_IGNORED
 }
 
@@ -139,10 +147,12 @@ public PrimaryAttackPost(weaponid)
 
     //punchangle
     new Float:zero[3] = {0.0, 0.0, 0.0}
+
     set_pev(id, pev_punchangle, zero)
 
     //fire rate
     new clip
+
     get_user_weapon(id, clip)
 
     if(clip > 0)

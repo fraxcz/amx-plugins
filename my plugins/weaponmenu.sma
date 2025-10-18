@@ -7,24 +7,29 @@
 #define AUTHOR "frax"
 
 new g_iPlayers[33]
-public plugin_init(){
+
+public plugin_init()
+{
     register_plugin(PLUGIN, VERSION, AUTHOR)
     register_clcmd("amx_weapons", "primaryMenu")
-    RegisterHamPlayer(Ham_Spawn, "spawned_player", 1)
+    RegisterHamPlayer(Ham_Spawn, "fw_hamSpawn", 1)
 }
 
-public spawned_player(id){
+public fw_hamSpawn(id)
+{
 
     g_iPlayers[id] = 0
 
-    if(is_user_alive(id)){
+    if(is_user_alive(id))
+    {
         strip_user_weapons(id)
         give_item(id, "weapon_knife")
     }
     else
         return PLUGIN_HANDLED
     
-    if(cs_get_user_team(id) == CS_TEAM_CT){
+    if(cs_get_user_team(id) == CS_TEAM_CT)
+    {
         g_iPlayers[id] = 1
     }
 
@@ -33,42 +38,54 @@ public spawned_player(id){
     return PLUGIN_HANDLED
 }
 
-public primaryMenu(id){
+public primaryMenu(id)
+{
 
     if(g_iPlayers[id] == 0 && !(get_user_flags(id) & ADMIN_RCON))
         return PLUGIN_HANDLED
 
     new menu = menu_create("Primary weapon menu", "menu_handler")
+
     menu_additem(menu, "\w AK-47", "P", 0)
     menu_additem(menu, "\w m4a1-s", "P", 0)
     menu_additem(menu, "\w super ak-47", "P")
     menu_setprop(menu, MPROP_EXIT, MEXIT_ALL) //this is redundant, but we can actually set this to not be able to exit the menu
     menu_display(id, menu, 0)
+
     return PLUGIN_HANDLED
 }
 
 public SecondaryMenu(id)
 {
     new menu = menu_create("Secondary weapon menu", "menu_handler")
+
     menu_additem(menu, "\w usp-s", "S", 0)
     menu_additem(menu, "\w glock-18", "S", 0)
     menu_display(id, menu, 0)
+
+    return PLUGIN_HANDLED
 }
 
-public menu_handler(id, menu, item){
-    if (item == MENU_EXIT){
+public menu_handler(id, menu, item)
+{
+    if (item == MENU_EXIT)
+    {
         menu_destroy(menu)
+
         return PLUGIN_HANDLED
     }
+
     new data[6], name[64]
     new item_access, item_callback
 
     menu_item_getinfo(menu, item, item_access, data, charsmax(data), name, charsmax(name), item_callback)
 
-    switch(data[0]){
+    switch(data[0])
+    {
         case 'P':
         {
-            switch(item){
+            switch(item)
+            {
                 case 0:
                 {
                     give_item(id, "weapon_ak47")
@@ -84,9 +101,12 @@ public menu_handler(id, menu, item){
                     callfunc_end()
                 }
             }
+
             g_iPlayers[id] = 0
+
             SecondaryMenu(id)
         }
+        
         case 'S':
         {
             switch(item)
@@ -102,6 +122,8 @@ public menu_handler(id, menu, item){
             }
         }
     }
+
     menu_destroy(menu)
+
     return PLUGIN_HANDLED
 }
