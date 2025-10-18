@@ -1,4 +1,5 @@
 #include <amxmodx>
+#include <amxmisc>
 #include <engine>
 #include <fun>
 #include <cstrike>
@@ -12,15 +13,18 @@
 new Array:g_iWeaponIds
 new VIEW_MODEL[] = "models/v_rapidak.mdl"
 new g_pcvar_knockback
-
+new g_pcvar_damage_multiplier
 public plugin_init()
 {
     register_plugin(PLUGIN, VERSION, AUTHOR)
     g_pcvar_knockback = create_cvar("amx_rapidak_knockbackforce", "10.0", FCVAR_NONE, "knockback force", true, 0.0, false)
+    g_pcvar_damage_multiplier = create_cvar("amx_rapidak_dmg_multiplier", "1.0", FCVAR_NONE, "damage multiplier", true, 0.0, false)
     RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_ak47", "PrimaryAttackPre", 0)
     RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_ak47", "PrimaryAttackPost", 1)
     RegisterHam(Ham_TakeDamage, "player", "fw_takeDamage", 1)
     RegisterHam(Ham_Item_Deploy, "weapon_ak47", "WeaponDeploy", 1)
+    RegisterHam(Ham_TraceAttack, "player", "fw_TraceAttack")
+    register_concmd("amx_give_rapidak", "cmd_give_rapidak", ADMIN_RCON, "amx_give_rapidak <target>")
     register_event("HLTV", "Event_HLTV_New_Round_phase", "a", "1=0", "2=0")
     register_forward(FM_ChangeLevel, "Level_end", 1)
     g_iWeaponIds = ArrayCreate(1)
@@ -32,15 +36,66 @@ public plugin_precache()
     precache_model(VIEW_MODEL)
 }
 
+public cmd_give_rapidak(id, level, cid)
+{
+    if(!cmd_access(id, level, cid, 2))
+		return PLUGIN_HANDLED
+    
+    new targetArg[24]
+
+    read_argv(1, targetArg, 24)
+
+    new playerTarget = cmd_target(id, targetArg, 0)
+
+    if(!playerTarget)
+    {
+        console_print(id, "%s could not be targeted", targetArg)
+
+        return PLUGIN_HANDLED
+    }
+
+    new playerName[255]
+    get_user_name(playerTarget, playerName, 255)
+
+    if(!is_user_alive(playerTarget))
+    {
+        console_print(id, "%s is not alive.", playerName)
+
+        return PLUGIN_HANDLED
+    }
+    
+
+    strip_user_weapons(playerTarget)
+    give_item(playerTarget, "weapon_knife")
+
+    if(give_player_rapidak(playerTarget))
+    {
+        console_print(id, "succesfully dropped ak to %s.", playerName)
+    }
+
+    else
+    {
+        console_print(id, "Couldn't give weapon to %s.", playerName)
+    }
+
+    return PLUGIN_HANDLED
+}
 
 public give_player_rapidak(id)
 {
     engclient_cmd(id, "drop", "weapon_ak47")
+    engclient_cmd(id, "drop", "weapon_m4a1")
 
     new weaponid =  give_item(id, "weapon_ak47")
+    if(weaponid > 0)
+    {
+        ArrayPushCell(g_iWeaponIds, weaponid)
+        return 1
+    }
 
-    ArrayPushCell(g_iWeaponIds, weaponid)
+    return 0
 }
+
 
 public remove_rapidak(weaponid)
 {
@@ -48,6 +103,9 @@ public remove_rapidak(weaponid)
 
     if(weapon_array_index != -1)
         ArrayDeleteItem(g_iWeaponIds, weapon_array_index)
+
+    
+
 }
 
 public Level_end()
@@ -159,4 +217,19 @@ public PrimaryAttackPost(weaponid)
         set_pdata_float(weaponid, 46, 0.05, 4)
 
     return HAM_IGNORED
+}
+
+public fw_TraceAttack(victim, attacker, Float:damage, Float:dir[3], trace, damagebits)
+{
+    if (!is_user_connected(attacker))
+        return HAM_IGNORED
+
+    new weaponid = cs_get_user_weapon_entity(attacker)
+
+    new weapon_array_index = ArrayFindValue(g_iWeaponIds, weaponid)
+
+    if(weapon_array_index != -1)
+        SetHamParamFloat(3, damage * get_pcvar_float(g_pcvar_damage_multiplier))
+
+    return HAM_HANDLED
 }
