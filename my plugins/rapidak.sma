@@ -166,6 +166,11 @@ public fw_takeDamage(victim, inflictor, attacker, Float:damage, damage_bits)
 
     get_user_velocity(victim, victim_velocity)
 
+    if(get_pdata_int( victim, 75 ) == 1)
+    {
+        knockback += 200
+    }
+
     victim_velocity[0] += attacker_velocity[0] * knockback
     victim_velocity[1] += attacker_velocity[1] * knockback
 

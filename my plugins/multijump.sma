@@ -31,7 +31,7 @@ public client_disconnected(id)
 
 public client_PreThink(id)
 {
-	if(!is_user_alive(id) && get_user_team(id) == 1) 
+	if(!is_user_alive(id) || get_user_team(id) == 1) 
 		return PLUGIN_CONTINUE
 
 	new nbut = get_user_button(id)
@@ -60,7 +60,7 @@ public client_PreThink(id)
 
 public client_PostThink(id)
 {
-	if(!is_user_alive(id) && get_user_team(id) == 1) 
+	if(!is_user_alive(id) || get_user_team(id) == 1) 
 		return PLUGIN_CONTINUE
 
 	if(g_iDoJump[id] == true)
