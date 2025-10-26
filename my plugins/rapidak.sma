@@ -12,6 +12,7 @@
 
 new Array:g_iWeaponIds
 new VIEW_MODEL[] = "models/v_rapidak.mdl"
+new PLAYER_MODEL[] = "models/p_rapidak.mdl"
 new g_pcvar_knockback
 new g_pcvar_damage_multiplier
 public plugin_init()
@@ -34,6 +35,7 @@ public plugin_init()
 public plugin_precache()
 {
     precache_model(VIEW_MODEL)
+    precache_model(PLAYER_MODEL)
 }
 
 public cmd_give_rapidak(id, level, cid)
@@ -90,6 +92,8 @@ public give_player_rapidak(id)
     if(weaponid > 0)
     {
         ArrayPushCell(g_iWeaponIds, weaponid)
+        engclient_cmd(id, "weapon_knife")
+        engclient_cmd(id, "weapon_ak47")
         return 1
     }
 
@@ -176,8 +180,8 @@ public WeaponDeploy(weaponid)
         return HAM_IGNORED
 
     new id = get_pdata_cbase(weaponid, 41, 4)
-
     set_pev(id, pev_viewmodel2, VIEW_MODEL)
+    set_pev(id, pev_weaponmodel2, PLAYER_MODEL)
 
     return HAM_IGNORED
 }
@@ -207,14 +211,6 @@ public PrimaryAttackPost(weaponid)
     new Float:zero[3] = {0.0, 0.0, 0.0}
 
     set_pev(id, pev_punchangle, zero)
-
-    //fire rate
-    new clip
-
-    get_user_weapon(id, clip)
-
-    if(clip > 0)
-        set_pdata_float(weaponid, 46, 0.05, 4)
 
     return HAM_IGNORED
 }

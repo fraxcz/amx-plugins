@@ -18,6 +18,11 @@ public plugin_init()
 public fw_hamSpawn(id)
 {
 
+    if(is_user_bot(id))
+    {
+        return HAM_IGNORED
+    }
+
     g_iPlayers[id] = 0
 
     if(is_user_alive(id))
@@ -26,7 +31,7 @@ public fw_hamSpawn(id)
         give_item(id, "weapon_knife")
     }
     else
-        return PLUGIN_HANDLED
+        return HAM_IGNORED
     
     if(cs_get_user_team(id) == CS_TEAM_CT)
     {
@@ -35,7 +40,7 @@ public fw_hamSpawn(id)
 
     primaryMenu(id)
     
-    return PLUGIN_HANDLED
+    return HAM_IGNORED
 }
 
 public primaryMenu(id)
