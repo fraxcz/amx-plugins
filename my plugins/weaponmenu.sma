@@ -46,7 +46,7 @@ public fw_hamSpawn(id)
 public primaryMenu(id)
 {
 
-    if(g_iPlayers[id] == 0 && !(get_user_flags(id) & ADMIN_RCON))
+    if(g_iPlayers[id] == 0)
         return PLUGIN_HANDLED
 
     new menu = menu_create("Primary weapon menu", "menu_handler")
